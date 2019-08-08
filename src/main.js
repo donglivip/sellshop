@@ -11,7 +11,6 @@ import VueAwesomeSwiper from 'vue-awesome-swiper'
 import 'swiper/dist/css/swiper.css'
 import Calendar from 'vue-mobile-calendar'
 
-
 Vue.config.productionTip = false
 Vue.use(VueAwesomeSwiper)
 Vue.use(Calendar)
