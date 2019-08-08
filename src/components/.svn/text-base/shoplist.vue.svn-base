@@ -1,0 +1,276 @@
+<template>
+	<div id="wrapper" class="shop02">
+		<t-head></t-head>
+		<div id="main" class="shop03">
+			<div class="left">
+				<div class="left-group" v-for="(val,index) in shopdata" @click="changetitle(val.usTraderShoppingSortId,index)" :class="lindex==index?'active':''">
+					<div>{{val.usTssResult}}</div>
+				</div>
+			</div>
+			<div class="right">
+				<div class="group" v-for="(val,index) in mydata" v-if="val!=null">
+					<div class="group-top">
+						<img :src="val.usTsImgUrl | myimg" class="avatar" style="width: 1.2rem;margin: .2rem;height: 1.2rem;" />
+						<div class="group-main">
+							<div class="shop-name">
+								{{val.usTsName}}
+							</div>
+							<div class="inform num">
+								{{val.usTsStock==null?'0':val.usTsStock}}{{val.maSuName}} {{val.usTsPrice}}
+							</div>
+							<div class="price">
+								¥{{val.usTsPackingFee}}
+							</div>
+						</div>
+					</div>
+					<div class="inform">
+						<div class="delete" @click.stop="openshoping(val.usTraderShoppingId,val.usTsPrice,val.usTsStock,val.usTsDetails)">
+							编辑
+						</div>
+						<div class="delete" @click.stop="shopchange(val.usTraderShoppingId,index,val.usTsStatus)">
+							{{val.usTsStatus==1?'下架':'上架'}}
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="add" @click="openshoping('')">
+				<img src="../../static/add.png" />
+			</div>
+			<transition name='alert'>
+				<alert v-show='alertshow' @alertboo='alertboo' @alerttrue='alerttrue'></alert>
+			</transition>
+		</div>
+	</div>
+</template>
+
+<script>
+	export default {
+		name: 'shop',
+		data() {
+			return {
+				alertshow: false,
+				mydata: [],
+				sid: '',
+				sidnex: '',
+				shopdata: [],
+				lindex:0
+			}
+		},
+		mounted() {
+			this.$store.state.head = '商品管理'
+			this.myajax()
+		},
+		methods: {
+			changetitle:function(id,index){
+				localStorage.setItem('usTraderShoppingSortId',id)
+				this.lindex=index
+				this.havethree()
+			},
+			shopchange: function(usTraderShoppingId, index, status) {
+				var that = this
+				$.ajax({
+					type: "post",
+					url: that.myurl + "/updateUsTraderShopping",
+					data: {
+						usTraderShoppingId: usTraderShoppingId,
+						usStoresEmployeeName: localStorage.getItem('userid'),
+						usTsStatus: status == 1 ? '2' : '1'
+					},
+					dataType: 'json',
+					success: function(res) {
+						that.mydata[index].usTsStatus = (status == 1 ? '2' : '1')
+					}
+				});
+			},
+			openshoping: function(usTraderShoppingId, price, sykc, detail) {
+				this.$store.state.usTraderShoppingId = usTraderShoppingId
+				this.$store.state.usTmcPrice = price
+				this.$store.state.usTmcLevel = sykc
+				this.$store.state.usRiDetailed = detail
+				this.opennew('shopdetail')
+			},
+			opennew: function(target) {
+				this.$router.push({
+					name: target
+				})
+			},
+			godelete: function(usTraderStoresId, index) {
+				this.sid = usTraderStoresId
+				this.sidnex = index
+				this.$store.state.alerttext = '是否删除商品'
+				this.alertboo()
+			},
+			alertboo: function() {
+				this.alertshow = !this.alertshow
+			},
+			alerttrue: function() {
+				var that = this
+				$.ajax({
+					type: "post",
+					url: that.myurl + "/delecteUsTraderShopping",
+					data: {
+						usTraderShoppingId: that.sid
+					},
+					dataType: 'json',
+					success: function(res) {
+						that.mydata.splice(that.sidnex, 1)
+					}
+				});
+				this.alertboo()
+			},
+			myajax: function() {
+				var that = this
+				//				获取二级分类
+				$.ajax({
+					type: "post",
+					url: that.myurl + "/selectUsTraderShoppingSort",
+					dataType: 'json',
+					data: {
+						usTraderStoresId: localStorage.getItem('usTraderStoresId')
+					},
+					success: function(res) {
+						that.shopdata = res.data
+						localStorage.setItem('usTraderShoppingSortId',res.data[0].usTraderShoppingSortId)
+						that.havethree()
+					}
+				});
+			},
+			havethree:function(){
+				//				获取二级分类下
+				var that=this
+				$.ajax({
+					type: "post",
+					url: that.myurl03 + "/user/queryUsTraderShoppingSortByUsTraderIdDetails",
+					data: {
+						usTraderStoresId: localStorage.getItem('usTraderStoresId'),
+						usTraderShoppingSortId: localStorage.getItem('usTraderShoppingSortId')
+					},
+					dataType: 'json',
+					success: function(res) {
+						that.mydata=[]
+						for(var i in res.data) {
+							if(i % 2 == 0) {
+								that.mydata.push(res.data[i])
+							}
+						}
+					}
+				});
+			}
+		},
+		computed: {
+			myurl() {
+				return this.$store.state.myurl
+			},
+			usTraderStoresId() {
+				return this.$store.state.usTraderStoresId
+			},
+			usTmcPrice() {
+				return this.$store.state.usTmcPrice
+			},
+			usTmcLevel() {
+				return this.$store.state.usTmcLevel
+			},
+			usRiDetailed() {
+				return this.$store.state.usRiDetailed
+			},
+			myurl03() {
+				return this.$store.state.myurl03
+			}
+		},
+		components: {
+			THead: resolve => require(['./head'], resolve),
+			alert: resolve => require(['./alert'], resolve)
+		},
+		filters: {
+			mystate: function(value) {
+				if(value == 0) {
+					return '审核成功'
+				} else if(value == 1) {
+					return '审核中'
+				} else {
+					return '审核失败'
+				}
+			},
+			myimg: function(value) {
+				return localStorage.getItem('myimg') + value.substring(value.indexOf('D:') + 1)
+			}
+		}
+	}
+</script>
+
+<style type="text/css" lang="scss" scoped="scoped">
+	.shop02 {
+		.shop03 {
+			.active{
+				background: #FFFFFF;
+				color: #FF8190;
+				div{border-left: .06rem solid #FF8190;width: 100%;box-sizing: border-box;text-align: center;}
+			}
+			.group-top {
+				display: flex;
+			}
+			display: flex;
+			.left {
+				width: 1.8rem;
+				.left-group {
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					border-bottom: 1px dashed #CCCCCC;
+					height: 1rem;
+				}
+			}
+			.right {
+				flex: 1;
+				display: flex;
+				flex-direction: column
+			}
+			.num{
+				color: #999999;font-size: .2rem;
+			}
+			.price{
+				color: #FF8190;font-weight: 600;
+			}
+			.delete{
+				height: .5rem;width: 2.2rem;display: flex;align-items: center;justify-content: center;color: #FF8190;border: 1px solid #FF8190;
+			}
+		}
+		.add {
+			position: absolute;
+			bottom: .3rem;
+			right: .3rem;
+			width: .7rem;
+			height: .7rem;
+			border-radius: 50%;
+			background: #FF8190;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			img {
+				width: .4rem;
+				height: .4rem;
+			}
+		}
+		
+		.group {
+			background: white;
+			margin-bottom: .1rem;
+			overflow: hidden;
+			padding-bottom:.34rem ;
+			.shop-name {
+				display: flex;
+				align-items: center;
+				height: .44rem;
+				margin-top:.1rem ;
+				padding: 0;
+			}
+			.inform {
+				display: flex;
+				align-items: center;
+				height: .6rem;
+				justify-content: space-around;
+			}
+			
+		}
+	}
+</style>

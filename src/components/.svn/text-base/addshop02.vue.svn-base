@@ -1,0 +1,509 @@
+<template>
+	<div class="login02" id="wrapper">
+		<t-head></t-head>
+		<div id="main" class="addshop" v-if="shopdata!=''">
+			<form action="">
+				<div class="input-group">
+					<span>门店名称</span>
+					<input type="text" placeholder="请输入门店名称" v-model="shopdata.usTsCompanyName"/>
+				</div>
+				<div class="input-group" @click="changestate(0)">
+					<span>营业状态</span>
+					<img src="../../static/close.png" style="height: .4rem;" v-if="shopdata.usTraderOperate.usToIsOpen==0">
+					<img src="../../static/open02.png" style="height: .4rem;" v-if="shopdata.usTraderOperate.usToIsOpen==1"/>
+				</div>
+				<div class="input-group" @click="changestate(1)">
+					<span>自动接单</span>
+					<img src="../../static/close.png" style="height: .4rem;" v-if="shopdata.usTraderOperate.usToIsOrders==0">
+					<img src="../../static/open02.png" style="height: .4rem;" v-if="shopdata.usTraderOperate.usToIsOrders==1"/>
+				</div>
+				<div class="input-group" @click="changestate(2)">
+					<span>自配送</span>
+					<img src="../../static/close.png" style="height: .4rem;" v-if="shopdata.usTraderOperate.usToIsDelivery==2">
+					<img src="../../static/open02.png" style="height: .4rem;" v-if="shopdata.usTraderOperate.usToIsDelivery==1"/>
+				</div>
+<!-- 				<div class="input-group">
+					<span>门店公告</span>
+					<input type="text" placeholder="门店公告"/>
+				</div> -->
+				<div class="input-group">
+					<span>配送开始时间</span>
+					<input type="number" placeholder="5:00" v-model="shopdata.usTraderOperate.usToActionTime"/>
+				</div>
+				<div class="input-group">
+					<span>配送结束时间</span>
+					<input type="number" placeholder="8:00" v-model="shopdata.usTraderOperate.usToEndTime"/>
+				</div>
+				<div class="input-group" @click="dizhichange()">
+					<span>店铺地址</span>
+					<input type="text" placeholder="店铺地址" readonly="readonly" v-model="shopdata.usTsLicenseArea"/>
+				</div>
+				<div class="input-group">
+					<span>店铺详细地址</span>
+					<input type="text" placeholder="店铺详细地址" v-model="shopdata.usTsLicenseDetailed"/>
+				</div>
+				<div class="input-group">
+					<span>店铺电话</span>
+					<input type="number" placeholder="店铺电话" v-model="shopdata.usTsContactPhone"/>
+				</div>
+				<div class="input-group">
+					<span>起送价格</span>
+					<input type="number" placeholder="起送价格" v-model="shopdata.usTsActionPrice"/>
+				</div>
+<!-- 				<div class="input-group img-group" @click="upload('usTsFacadeImg')">
+					<span>营业执照</span>
+					<img src="../../static/addrating.png" class="upimg" id="usTsFacadeImg" />
+				</div> -->
+				<div class="input-group img-group" @click="upload('usTsBannerImg')">
+					<span>首页轮播展示图</span>
+					<img :src="myurl03 + shopdata.usTsBannerImg" class="upimg" id="usTsBannerImg" v-if="shopdata.usTsBannerImg!=''&&shopdata.usTsBannerImg!=null"/>
+					<img src="../../static/addrating.png" class="upimg" id="usTsBannerImg"  v-if="shopdata.usTsBannerImg==''||shopdata.usTsBannerImg==null"/>
+				</div>
+				<div class="input-group img-group" @click="upload('usTsFacadeImg')">
+					<span>店铺头像</span>
+					<img :src="myurl03 + shopdata.usTsFacadeImg" class="upimg" id="usTsFacadeImg" v-if="shopdata.usTsFacadeImg!=''&&shopdata.usTsFacadeImg!=null"/>
+					<img src="../../static/addrating.png" class="upimg" id="usTsFacadeImg"  v-if="shopdata.usTsFacadeImg==''||shopdata.usTsFacadeImg==null"/>
+				</div>
+<!-- 				<div class="input-group">
+					<div style="flex: 1;color: #333333;font-size: .2rem;">请选择店长</div>
+					<select name="" v-model="usTraderEmployeeId">
+						<option :value="val.usTraderEmployeeId" v-for="(val,index) in mydata" v-if="val.usTeCardId==0">{{val.usTeName}}</option>
+					</select>
+				</div> -->
+				<input type="button" name="mysubmit" id="mysubmit" value="提交" @click="gosubmit" />
+			</form>
+		</div>
+		<v-distpicker type="mobile" @selected="onSelected" v-if='dizhiboo'></v-distpicker>
+	</div>
+</template>
+
+<script>
+	import VDistpicker from 'v-distpicker'
+	export default {
+		name: 'userregister',
+		data() {
+			return {
+				usTraderEmployeeId:'',//店长id
+				mydata:[],//店长数组
+				shopdata:'',//店铺信息对象
+				dizhiboo:false,
+				sheng:'',
+				shi:'',
+				qu:''
+			}
+		},
+		mounted() {
+			this.$store.state.head = '门店设置'
+			this.myajax()
+		},
+		methods: {
+			changestate:function(type){
+				if(type==0){
+					this.shopdata.usTraderOperate.usToIsOpen==0?this.shopdata.usTraderOperate.usToIsOpen=1:this.shopdata.usTraderOperate.usToIsOpen=0
+				}else if(type==1){
+					this.shopdata.usTraderOperate.usToIsOrders==0?this.shopdata.usTraderOperate.usToIsOrders=1:this.shopdata.usTraderOperate.usToIsOrders=0
+				}else{
+					this.shopdata.usTraderOperate.usToIsDelivery==2?this.shopdata.usTraderOperate.usToIsDelivery=1:this.shopdata.usTraderOperate.usToIsDelivery=2
+				}
+			},
+			dizhichange:function(){
+				this.dizhiboo=!this.dizhiboo
+			},
+			onSelected:function(data){
+				 // 地址选择回调
+				 this.sheng=data.province.value
+				 this.shi=data.city.value
+				 this.qu=data.area.value
+				 this.shopdata.usTsLicenseArea=data.area.value
+				 console.log(this.shopdata.usTsLicenseArea)
+				this.dizhichange()
+			},
+			myajax:function(){
+				var that=this
+				// 查询店长列表
+				$.ajax({
+					type: "post",
+					url: that.myurl + "/selectUsTraderEmployeeAll",
+					dataType: 'json',
+					data: {
+						usTraderId: localStorage.getItem('userid')
+					},
+					success: function(res) {
+						that.mydata = res.data
+					}
+				});
+				// 查询店铺信息
+				$.ajax({
+					type: "post",
+					url: that.myurl03 + "/user/getUsTraderStoresByUsTraderStoresId ",
+					dataType: 'json',
+					data: {
+						usTraderStoresId: that.usTraderStoresId
+					},
+					success: function(res) {
+						that.shopdata = res.data
+					}
+				});
+			},
+			opennew: function(target) {
+				this.$router.push({
+					name: target
+				});
+			},
+			gosubmit: function() {
+				var that = this
+				function plusReady() {
+					// 弹出系统等待对话框
+					plus.nativeUI.showWaiting()
+				}
+				if(window.plus) {
+					plusReady();
+				} else {
+					document.addEventListener("plusready", plusReady, false);
+				}
+				var dataJson = {
+					usTraderStoresId:that.usTraderStoresId,
+					usTsCompanyName :that.shopdata.usTsCompanyName,//商铺名称
+					usToIsOpen:that.shopdata.usToIsOpen,//是否营业
+					usToIsOrders:that.shopdata.usTraderOperate.usToIsOrders,//是否自动接单
+					usToIsDelivery:that.shopdata.usTraderOperate.usToIsDelivery,//是否自己配送
+					usToActionTime:that.shopdata.usTraderOperate.usToActionTime,
+					usToEndTime:that.shopdata.usTraderOperate.usToEndTime,
+					usTsLicenseDetailed:that.shopdata.usTsLicenseDetailed,
+					usTsLicenseProvince:that.sheng,
+					usTsLicenseCity:that.shi,
+					usTsLicenseArea:that.qu,
+					usTsContactPhone:that.shopdata.usTsContactPhone,
+					usTsActionPrice:that.shopdata.usTsActionPrice
+				}
+				$.ajax({
+					type: "post",
+					url: that.myurl03 + "/user/updateUsToIsOrdersByUsTraderStoresId",
+					dataType: 'json',
+					data: dataJson,
+					success: function(res) {
+						function plusReady() {
+							// 弹出系统等待对话框
+							plus.nativeUI.closeWaiting()
+						}
+						if(window.plus) {
+							plusReady();
+						} else {
+							document.addEventListener("plusready", plusReady, false);
+						}
+						if(res.status == 200) {
+							plus.nativeUI.toast('操作完成')
+							that.$router.back()
+						} else {
+							plus.nativeUI.toast('操作失败')
+						}
+					}
+				});
+			},
+			upload: function(target) {
+				var that = this
+				that.files = []
+				that.uploadtarget = target
+				var btnArray = [{
+					title: "照相机"
+				}, {
+					title: "相册"
+				}]; //选择按钮  1 2 3
+				plus.nativeUI.actionSheet({
+					title: "请选择",
+					cancel: "取消",
+					buttons: btnArray
+				}, function(e) {
+					var index = e.index;
+					switch(index) {
+						case 1:
+							that.camera();
+							break;
+						case 2:
+							that.album();
+							break;
+					}
+				});
+			},
+			camera: function() {
+				var that = this
+				var cmr = plus.camera.getCamera();
+				cmr.captureImage(function(p) {
+					//成功
+					plus.io.resolveLocalFileSystemURL(p, function(entry) {
+						var img_name = entry.name;
+						var img_path = entry.toLocalURL();
+						document.getElementById(that.uploadtarget).setAttribute('src', img_path)
+						that.upload_img(img_path);
+					}, function(e) {
+						alert("读取拍照文件错误：" + e.message);
+					});
+
+				}, function(e) {
+					alert("失败：" + e.message);
+				}, {
+					filename: '_doc/camera/',
+					index: 1
+				});
+			},
+			album: function() {
+				var that = this
+				plus.gallery.pick(function(path) {
+					document.getElementById(that.uploadtarget).setAttribute('src', path)
+					that.upload_img(path);
+				}, function(e) {
+					alert("取消选择图片");
+				}, {
+					filter: "image"
+				});
+			},
+			upload_img: function(p) {
+				var thats = this
+				var img = new Image();
+				img.src = p; // 传过来的图片路径在这里用。
+				img.onload = function() {
+					var that = this;
+					//生成比例
+					var w = that.width,
+						h = that.height,
+						scale = w / h;
+					w = 280 || w; //480  你想压缩到多大，改这里
+					h = w / scale;
+					//生成canvas
+					var canvas = document.createElement('canvas');
+					var ctx = canvas.getContext('2d');
+					$(canvas).attr({
+						width: w,
+						height: h
+					});
+					ctx.drawImage(that, 0, 0, w, h);
+					$.ajax({
+						type: "post",
+						url: thats.myurl + '/imageRiderImageUsTraderStores',
+						dataType: 'json',
+						data: {
+							imgStr: canvas.toDataURL('image/jpeg', 1 || 0.8)
+						},
+						success: function(res) {
+							$('#' + thats.uploadtarget + '').val(res.data)
+						}
+					});
+				}
+			}
+		},
+		computed: {
+			myurl() {
+				return this.$store.state.myurl
+			},
+			myurl03() {
+				return this.$store.state.myurl03
+			},
+			usTraderStoresId() {
+				return this.$store.state.usTraderStoresId
+			}
+		},
+		components: {
+			alert: resolve => require(['./alert'], resolve),
+			THead: resolve => require(['./head'], resolve),
+			VDistpicker
+		}
+	}
+</script>
+
+<style type="text/css" lang="scss" scoped="scoped">
+	.login02 .head img {
+		height: .3rem;
+	}
+
+	.login02 select {
+		border: 0;
+		width: 2rem;
+		height: .5rem;
+	}
+
+	.login02 .logo {
+		width: 1.5rem;
+		height: 1.5rem;
+		margin: 1rem auto .7rem;
+		display: block;
+	}
+
+	.login02 .input-group {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		padding: .15rem .3rem;
+		background: #FFFFFF;
+		border-bottom: 1px solid #D8D8D8;
+		&:first-of-type{margin-top: .2rem;}
+	}
+
+	.login02 .input-group img {
+		height: .25rem;
+		margin: .26rem 0
+	}
+
+	.login02 .input-group input {
+		margin: 0;
+		padding: 0;
+		border: 0;
+		flex: 1;
+		text-align: right;
+		font-size: .2rem;
+		height: .8rem
+	}
+	input::-webkit-input-placeholder{
+		color: #999999!important;
+		font-size: .2rem;
+	}
+
+
+	.login02 .input-group span {
+		flex: 1;
+		text-align: left;
+		font-weight: 600;
+	}
+
+	.login02 .main {
+		overflow: hidden;
+		color: white;
+	}
+
+	.login02 h1 {
+		margin: .2rem;
+		font-size: .23rem;
+		display: block;
+		font-weight: 400;
+	}
+
+	.login02 .group02 {
+		background: white;
+		margin: 0;
+		padding: .1rem 0;
+	}
+
+	.register .input-group {
+		background: white;
+		padding: .1rem;
+		border: 0;
+	}
+
+	.register .registergp div {
+		width: .3rem;
+		height: .3rem;
+		border-radius: 50%;
+		border: 1px solid gray;
+		margin: 0 .1rem;
+	}
+
+	.register .registergp img {
+		width: .3rem;
+		height: .3rem;
+	}
+
+	.login02 {
+		position: relative;
+		color: white;
+	}
+
+	.login02 video {
+		position: fixed;
+		height: 100%;
+		top: 0;
+		left: 0;
+	}
+
+	.login02 form {
+		position: relative;
+		z-index: 3;
+	}
+
+	.login02 .upimg {
+		width: 1.5rem!important;
+		height: 1.5rem!important;
+		display: block
+	}
+
+	.login02 label {
+		font-size: .2rem;
+	}
+
+	.title01 {
+		flex: 1;
+		color: #666666;
+		font-size: .2rem;
+	}
+
+	input[type='radio'] {
+		flex: none!important;
+		margin: 0 .2rem!important;
+	}
+
+	input[type=radio] {
+		display: inline-block;
+		vertical-align: middle;
+		width: .4rem;
+		height: .4rem!important;
+		-webkit-appearance: none;
+		background-color: transparent;
+		border: 0;
+		outline: 0 !important;
+		line-height: 20px;
+		color: #d8d8d8;
+		align-items: center;
+		justify-content: center;
+	}
+
+	input[type=file] {
+		opacity: 0;
+	}
+
+	input[type=radio]:after {
+		content: '';
+		display: block;
+		width: .4rem;
+		height: .4rem;
+		border-radius: 50%;
+		text-align: center;
+		color: #fff;
+		border: 1px solid #ddd;
+		background-color: #fff;
+		box-sizing: border-box;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	input[type=radio]:checked:after {
+		content: "⚪";
+		display: block;
+		margin: 0 auto;
+		border-color: #FF8190;
+		background-color: #FF8190;
+		width: .4rem;
+		height: .4rem;
+	}
+
+	.addshop input {
+		color: #333333
+	}
+	.img-group{
+		flex-direction: column;
+		span{
+			width: 100%
+		}
+	}
+	.login02 #mysubmit {
+		width: 6.5rem;
+		height: .8rem;
+		color: #FFFFFF;
+		background: #FF8190;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		display: block;
+		border: 0;
+		padding: 0;
+		margin: .4rem auto .2rem;
+	}
+</style>

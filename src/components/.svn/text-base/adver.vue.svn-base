@@ -1,0 +1,699 @@
+<template>
+	<div id="wrapper" class="shop">
+		<t-head></t-head>
+		<div id="main">
+			<div class="top-nav">
+				<div class="item" :class="index==0?'active':''" @click="change(0)">
+					所有平台广告
+				</div>
+				<div class="item" :class="index==1?'active':''" @click="change(1)">
+					我的平台广告
+				</div>
+				<div class="item" :class="index==2?'active':''" @click="change(2)">
+					互推信息
+				</div>
+				<div class="item" :class="index==3?'active':''" @click="change(3)">
+					推广信息
+				</div>
+			</div>
+			<!--所有平台广告-->
+			<div class="main-inner" v-if="index==0">
+				<div class="group" v-for="val in mydata">
+					<div class="shop-name">
+						<img src="../../static/sho.png" class="avatar" />
+						<div class="name">
+							{{val.maAdUserStyle==1?'管理员':'代理商'}}广告
+						</div>
+						<div class="state">
+
+						</div>
+					</div>
+					<div class="inform">
+						<div class="title">
+							投放范围:
+						</div>
+						<div class="text">
+							{{val.maAdStyle | state}}
+						</div>
+					</div>
+					<div class="inform">
+						<div class="title">
+							展示地址:
+						</div>
+						<div class="text">
+							{{val.maApName}}
+						</div>
+					</div>
+					<div class="shop-setting">
+						<div class="time">
+							<span class="title">创建时间:</span>{{val.maAdCreateTimeString}}
+						</div>
+						<div class="delete" @click="pay(val.maAdvertisingId)">
+							购买
+						</div>
+					</div>
+				</div>
+			</div>
+			<!--我的平台广告-->
+			<div class="main-inner" v-if="index==1">
+				<div class="group" v-for="(val,index) in mydata01" :class="val.usTaPayPrice==0?'nomoney':''">
+					<div class="shop-name">
+						<img src="../../static/sho.png" class="avatar" />
+						<div class="name">
+							{{val.usTsCompanyName}}
+						</div>
+						<div class="state">
+
+						</div>
+					</div>
+					<div class="inform">
+						<div class="title">
+							投放范围:
+						</div>
+						<div class="text">
+							{{val.maAdStyle | state}}
+						</div>
+					</div>
+					<div class="inform">
+						<div class="title">
+							展示地址:
+						</div>
+						<div class="text">
+							{{val.maApName}}
+						</div>
+					</div>
+					<div class="shop-setting">
+						<div class="time">
+							到期时间:{{val.usTaLimitTimeString}}
+						</div>
+						<div class="delete" @click="changestate(val.usTraderAdvertisingId,val.usTaStatus,index)" v-if="val.usTaPayPrice!=0">
+							{{val.usTaStatus==0?'已下架':'已上架'}}
+						</div>
+						<div class="delete" @click="changestate(val.usTraderAdvertisingId,4,index)">
+							删除
+						</div>
+					</div>
+				</div>
+			</div>
+			<!--我的互推信息-->
+			<div class="main-inner" v-if="index==2">
+				<div class="group" v-for="(val,index) in mydata02">
+					<div class="shop-name">
+						<img src="../../static/sho.png" class="avatar" />
+						<div class="name">
+							{{val.usTerCreateName +'-'+ val.maSpsName}}
+						</div>
+						<div class="state">
+
+						</div>
+					</div>
+					<div class="inform">
+						<div class="title">
+							互推区域:
+						</div>
+						<div class="text">
+							{{val.usTerIsArea==1?'所在区域':'全国'}}
+						</div>
+					</div>
+					<div class="inform">
+						<div class="title">
+							是否支付:
+						</div>
+						<div class="text">
+							{{val.usTerIsPay==0?'否':'是'}}
+						</div>
+					</div>
+					<div class="shop-setting">
+						<div class="time">
+							<span class="title">创建时间:</span>{{val.usTerCreateTimeString}}
+						</div>
+						<div class="delete" @click="changestate02(val.usTraderElectReleaseId,val.usTerStatus,index)">
+							{{val.usTerStatus==0?'已下架':'已上架'}}
+						</div>
+						<div class="delete" @click="changestate02(val.usTraderElectReleaseId,4,index)">
+							删除
+						</div>
+					</div>
+				</div>
+			</div>
+			<!--我的平台广告-->
+			<div class="main-inner" v-if="index==3">
+				<div class="group" v-for="(val,index) in mydata03">
+					<div class="shop-name">
+						<img src="../../static/sho.png" class="avatar" />
+						<div class="name">
+							{{val.usTerCreateName}}
+						</div>
+						<div class="state">
+
+						</div>
+					</div>
+					<div class="inform">
+						<div class="title">
+							互推区域:
+						</div>
+						<div class="text">
+							{{val.usTerIsArea==1?'所在区域':'全国'}}
+						</div>
+					</div>
+					<div class="inform">
+						<div class="title">
+							是否支付:
+						</div>
+						<div class="text">
+							{{val.usTerIsPay==0?'否':'是'}}
+						</div>
+					</div>
+					<div class="shop-setting">
+						<div class="time">
+							<span class="title">创建时间:</span>{{val.usTerCreateTimeString}}
+						</div>
+						<div class="delete" @click="haveadver(val.usTraderElectReleaseId,val.usTraderStoresId,index)">
+							接受
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="add" @click="opennew('adveradd')">
+				<img src="../../static/add.png" />
+			</div>
+			<transition name='alert'>
+				<alert v-show='alertshow' @alertboo='alertboo' @alerttrue='alerttrue'></alert>
+			</transition>
+			<transition name='alert'>
+				<div id="alert" v-if="payboo">
+					<div id="alert-main">
+						<h1>购买广告</h1>
+						<p @click="timechange">{{time}}</p>
+						<select name="" v-model="usTraderStoresId">
+							<option :value="val.usTraderStoresId" v-for="val in navdata">{{val.usTsCompanyName}}</option>
+						</select>
+						<input type="number" v-model="usTaPayPrice" placeholder="请输入投放金额" />
+						<div id="alert-setting">
+							<span @click="gopay">购买</span>
+							<span @click="payshow">取消</span>
+						</div>
+					</div>
+				</div>
+			</transition>
+		</div>
+	</div>
+</template>
+
+<script>
+	export default {
+		name: 'shop',
+		data() {
+			return {
+				payboo: false,
+				alertshow: false,
+				mydata: [],
+				maAdStatus: '',
+				index: 0,
+				mydata01: [],
+				mydata02: [],
+				mydata03: [],
+				time: '点击选择到期时间',
+				usTraderStoresId: '',
+				navdata: '',
+				maAdvertisingId: '',
+				usTaPayPrice: ''
+			}
+		},
+		mounted() {
+			this.$store.state.head = '广告管理'
+			this.myajax()
+		},
+		methods: {
+			changestate02: function(usTaderElectReleaseId, status, index) {
+				function plusReady() {
+					// 弹出系统等待对话框
+					plus.nativeUI.showWaiting()
+				}
+				if(window.plus) {
+					plusReady();
+				} else {
+					document.addEventListener("plusready", plusReady, false);
+				}
+				var mystatus;
+				if(status == 0) {
+					mystatus = 1
+				} else if(status == 1) {
+					mystatus = 0
+				} else {
+					mystatus = 4
+				}
+				var that = this
+				$.ajax({
+					type: "post",
+					url: that.myurl + "/updateUsTraderElectRelease",
+					dataType: 'json',
+					data: {
+						usTaderElectReleaseId: usTaderElectReleaseId,
+						usTerStatus: mystatus
+					},
+					success: function(res) {
+						function plusReady() {
+							// 弹出系统等待对话框
+							plus.nativeUI.closeWaiting()
+						}
+						if(window.plus) {
+							plusReady();
+						} else {
+							document.addEventListener("plusready", plusReady, false);
+						}
+						if(res.data == 1) {
+							if(mystatus != 4) {
+								that.myajax()
+							} else {
+								that.myajax()
+							}
+						} else if(res.data == 0) {
+							plus.nativeUI.toast('失败')
+						} else {
+							plus.nativeUI.toast('余额不足,请充值')
+						}
+					}
+				});
+			},
+			haveadver: function(usTraderElectReleaseId, usTraderStoresId, index) {
+				var that = this
+				var ajaxjson = {
+					usTraderElectReleaseId: usTraderElectReleaseId,
+					usTraderStoresId: localStorage.getItem('userid'),
+					usTrName: localStorage.getItem('username')
+				}
+				$.ajax({
+					type: "post",
+					url: that.myurl + "/insertUsTraderElectReceive",
+					dataType: 'json',
+					data: ajaxjson,
+					success: function(res) {
+						if(res.data == 1) {
+							that.mydata03.splice(index, 1)
+						} else {
+							plus.nativeUI.toast('添加失败')
+						}
+					}
+				});
+			},
+			changestate: function(usTraderAdvertisingId, status, index) {
+				function plusReady() {
+					// 弹出系统等待对话框
+					plus.nativeUI.showWaiting()
+				}
+				if(window.plus) {
+					plusReady();
+				} else {
+					document.addEventListener("plusready", plusReady, false);
+				}
+				var mystatus;
+				if(status == 0) {
+					mystatus = 1
+				} else if(status == 1) {
+					mystatus = 0
+				} else {
+					mystatus = 4
+				}
+				var that = this
+				$.ajax({
+					type: "post",
+					url: that.myurl + "/updateUsTraderAdvertising",
+					dataType: 'json',
+					data: {
+						usTraderAdvertisingId: usTraderAdvertisingId,
+						usTaStatus: mystatus
+					},
+					success: function(res) {
+						function plusReady() {
+							// 弹出系统等待对话框
+							plus.nativeUI.closeWaiting()
+						}
+						if(window.plus) {
+							plusReady();
+						} else {
+							document.addEventListener("plusready", plusReady, false);
+						}
+						if(res.data == 1) {
+							if(mystatus != 4) {
+								that.mydata01[index].usTaStatus = mystatus
+							} else {
+								that.mydata01.splice(index, 1)
+							}
+						} else if(res.data == 0) {
+							plus.nativeUI.toast('失败')
+						} else {
+							plus.nativeUI.toast('余额不足,请充值')
+						}
+					}
+				});
+			},
+			gopay: function() {
+				function plusReady() {
+					// 弹出系统等待对话框
+					plus.nativeUI.showWaiting()
+				}
+				if(window.plus) {
+					plusReady();
+				} else {
+					document.addEventListener("plusready", plusReady, false);
+				}
+				var that = this
+				var ajaxjson = {
+					usTraderId: localStorage.getItem('userid'),
+					usTrName: localStorage.getItem('username'),
+					maAdvertisingId: that.maAdvertisingId,
+					usTraderStoresId: that.usTraderStoresId,
+					usTaLimitTime: that.time,
+					usTaPayPrice: that.usTaPayPrice,
+					usTaStatus: 1
+				}
+				//				判断广告是否已经购买
+				$.ajax({
+					type: "post",
+					url: that.myurl + "/flagBuyAd",
+					dataType: 'json',
+					data: {
+						storesId: that.usTraderStoresId,
+						adId: that.maAdvertisingId
+					},
+					success: function(res) {
+						if(res.status == 200) {
+							$.ajax({
+								type: "post",
+								url: that.myurl + "/insertUsTraderAdvertising",
+								dataType: 'json',
+								data: ajaxjson,
+								success: function(res) {
+									function plusReady() {
+										// 弹出系统等待对话框
+										plus.nativeUI.closeWaiting()
+									}
+									if(window.plus) {
+										plusReady();
+									} else {
+										document.addEventListener("plusready", plusReady, false);
+									}
+									if(res.data == 1) {
+										that.myajax()
+										that.payboo=false
+										plus.nativeUI.toast('购买完成')
+									} else if(res.data == -1) {
+										alert('钱包余额不足，请充值')
+									} else {
+										alert('购买失败')
+									}
+								},
+								error: function(errr) {
+									console.log(JSON.stringify(errr))
+								}
+							});
+						} else {
+							alert(res.msg)
+						}
+					},
+					error: function(errr) {
+						console.log(JSON.stringify(errr))
+					}
+				});
+
+			},
+			timechange: function() {
+				var that = this
+				plus.nativeUI.pickDate(function(e) {
+					var d = e.date;
+					that.time = d.getFullYear() + "/" + (d.getMonth() + 1) + "/" + d.getDate()
+				}, function(e) {
+					console.log("未选择日期：" + e.message);
+				});
+			},
+			payshow: function() {
+				this.payboo = !this.payboo
+			},
+			pay: function(maAdvertisingId) {
+				this.payshow()
+				this.maAdvertisingId = maAdvertisingId
+			},
+			change: function(index) {
+				this.index = index
+			},
+			opennew: function(target) {
+				this.$router.push({
+					name: target
+				})
+			},
+			godelete: function() {
+				this.$store.state.alerttext = '是否删除广告'
+				this.alertboo()
+			},
+			alertboo: function() {
+				this.alertshow = !this.alertshow
+			},
+			alerttrue: function() {
+				this.alertboo()
+			},
+			myajax: function() {
+				function plusReady() {
+					// 弹出系统等待对话框
+					plus.nativeUI.showWaiting()
+				}
+				if(window.plus) {
+					plusReady();
+				} else {
+					document.addEventListener("plusready", plusReady, false);
+				}
+				var that = this
+				//			获取所有的广告
+				$.ajax({
+					type: "post",
+					url: that.myurl + "/selectUsTraderStores",
+					dataType: 'json',
+					data: {
+						usTraderId: localStorage.getItem('userid')
+					},
+					success: function(res) {
+						that.navdata = res.data
+					}
+				});
+				//			获取购买过的广告
+				$.ajax({
+					type: "post",
+					url: that.myurl + "/selectMaAdvertising",
+					dataType: 'json',
+					success: function(res) {
+						that.mydata = res.data
+					}
+				});
+				//			获取互推信息
+				$.ajax({
+					type: "post",
+					url: that.myurl + "/selectMaAdvertisingMaAdvertisingPositionPojo",
+					dataType: 'json',
+					data: {
+						usTraderId: localStorage.getItem('userid')
+					},
+					success: function(res) {
+						that.mydata01 = res.data
+					}
+				});
+				//			获取推广信息
+				$.ajax({
+					type: "post",
+					url: that.myurl + "/selectUsTraderElectReleaseMaStorePushStylePojo",
+					dataType: 'json',
+					data: {
+						usTraderId: localStorage.getItem('userid')
+					},
+					success: function(res) {
+						that.mydata02 = res.data
+					}
+				});
+				$.ajax({
+					type: "post",
+					url: that.myurl + "/selectUsTraderElectReceive",
+					dataType: 'json',
+					data: {
+						usTraderId: localStorage.getItem('userid')
+					},
+					success: function(res) {
+						that.mydata03 = res.data
+					}
+				});
+				function plusReady() {
+					// 弹出系统等待对话框
+					plus.nativeUI.closeWaiting()
+				}
+				if(window.plus) {
+					plusReady();
+				} else {
+					document.addEventListener("plusready", plusReady, false);
+				}
+			}
+		},
+		computed: {
+			myurl() {
+				return this.$store.state.myurl
+			}
+		},
+		components: {
+			THead: resolve => require(['./head'], resolve),
+			alert: resolve => require(['./alert'], resolve)
+		},
+		filters: {
+			state: function(value) {
+				switch(value) {
+					case 1:
+						return '全国'
+						break;
+					case 2:
+						return '全省'
+						break;
+					case 3:
+						return '全市'
+						break;
+					case 4:
+						return '区域'
+						break;
+					default:
+						return '未知范围'
+						break;
+				}
+			}
+		}
+	}
+</script>
+
+<style type="text/css" lang="scss">
+	.shop {
+		#main {
+			height: 100%;
+			overflow: hidden;
+			.shop-name{
+				border: 0;
+			}
+			#alert p {
+				width: 60%;
+				margin: .2rem auto;
+				display: block;
+				line-height: .8rem;
+				text-align: center;
+				background: #f4f4f4;
+				border-radius: .1rem;
+			}
+			.nomoney{
+				background: url(../../static/qian.png) no-repeat;
+				background-position: top right;
+				background-size: 2rem;
+			}
+			select,
+			input {
+				width: 60%;
+				height: .8rem;
+				background: #f4f4f4;
+				border-radius: .1rem;
+				border: 0;
+				margin: .2rem auto;
+				display: block;
+				text-align: center;
+				option {
+					text-align: center;
+				}
+			}
+			.top-nav {
+				width: 100%;
+				display: flex;
+				align-items: center;
+				background: #FFFFFF;
+				.item {
+					flex: 1;
+					height: .6rem;
+					line-height: .6rem;
+					text-align: center;
+					font-size: .2rem;
+				}
+				.active {
+					border-bottom: 2px solid #FF8190;
+				}
+			}
+			.main-inner {
+				height: calc(100% - 1.6rem);
+				overflow-y: scroll;
+			}
+		}
+		.add {
+			position: absolute;
+			bottom: .3rem;
+			right: .3rem;
+			width: .7rem;
+			height: .7rem;
+			border-radius: 50%;
+			background: #FF8190;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			img {
+				width: .4rem;
+				height: .4rem;
+			}
+		}
+		.group {
+			width: calc(100% - .4rem);
+			border-radius: .1rem;
+			background: white;
+			margin: .1rem .2rem;
+			overflow: hidden;
+			.shop-name {
+				display: flex;
+				align-items: center;
+				height: .7rem;
+				img {
+					width: .4rem;
+					height: .4rem;
+					margin: 0 .2rem;
+				}
+				.name {
+					flex: 1;
+				}
+				.state {
+					color: #FF8190;
+					margin-right: .2rem;
+				}
+			}
+			.title {
+					width: 1.3rem;
+					color: #767676;
+					font-size: .28rem;
+					margin-left: .3rem;
+					display: inline-block;
+				}
+			.inform {
+				display: flex;
+				align-items: center;
+				height: .6rem;
+				.text {
+					color: #272727;
+					flex: 1;
+					font-size: .28rem;
+					font-weight: 600;
+				}
+			}
+			.shop-setting {
+				height: .8rem;
+				background: white;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				.time {
+					flex: 1;
+				}
+				.delete {
+					margin-right: .2rem;
+					background: #FF8190;
+					color: white;
+					padding: .1rem .2rem;
+					border-radius: .05rem;
+				}
+			}
+		}
+	}
+</style>

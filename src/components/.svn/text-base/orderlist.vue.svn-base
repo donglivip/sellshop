@@ -1,0 +1,290 @@
+<template>
+	<div id="wrapper" class="orderlist">
+		<div id="head">
+			<span></span>
+			<div>我的订单</div>
+			<span><!--<strong @click="openchange" v-if='usertype==1'>{{shopinform.usToIsOpen==1?'营业中':'休息中'}}</strong>--></span>
+		</div>
+		<div id="main">
+			<div class="nav">
+				<div class="nav-tab" :class="swiperidnex == 0 ? 'active' : ''" @click="tab(0)">已完成</div>
+				<!-- 				<div class="nav-tab" :class="swiperidnex==1?'active':''" @click="tab(1)">
+					待接单
+				</div>
+				<div class="nav-tab" :class="swiperidnex==2?'active':''" @click="tab(2)">
+					待配送
+				</div> -->
+				<div class="nav-tab" :class="swiperidnex == 1 ? 'active' : ''" @click="tab(1)">进行中</div>
+				<div class="nav-tab" :class="swiperidnex == 2 ? 'active' : ''" @click="tab(2)">退款</div>
+			</div>
+			<swiper :options="swiperOption" ref="mySwiper" class="swiper-no-swiping">
+				<swiper-slide>
+					<img src="../../static/orderhistory_03.png" class="noorder" v-if="mydata.length == 0" />
+					<div class="order-group" @click="opennew('orderdetail', val.usOrderId)" v-for="val in mydata" v-if="mydata.length != 0">
+						<img src="../../static/sho.png" />
+						<div class="order-main">
+							<div class="order-text">
+								<span class="order-name">{{ val.usTsCompanyName }}</span>
+								<span class="order-state">已完成</span>
+							</div>
+							<div class="order-time">下单时间:{{ val.usOrCreateTimeString }}</div>
+							<div class="order-money">
+								<span class="oder-price">总价： ¥ {{ val.usOrPrice }}</span>
+								<!--<span class="order-setting">
+											已完成
+									</span>-->
+							</div>
+						</div>
+					</div>
+				</swiper-slide>
+				<swiper-slide>
+					<img src="../../static/orderhistory_03.png" class="noorder" v-if="mydata01.length == 0" />
+					<div class="order-group" @click="opennew('orderdetail', val.usOrderId)" v-for="val in mydata01" v-if="mydata01.length != 0">
+						<img src="../../static/sho.png" />
+						<div class="order-main">
+							<div class="order-text">
+								<span class="order-name">{{ val.usTsCompanyName }}</span>
+								<span class="order-state">配送中</span>
+							</div>
+							<div class="order-time">下单时间:{{ val.usOrCreateTimeString }}</div>
+							<div class="order-money">
+								<span class="oder-price">总价： ¥ {{ val.usOrPrice }}</span>
+								<!--<span class="order-setting">
+											已完成
+									</span>-->
+							</div>
+						</div>
+					</div>
+				</swiper-slide>
+				<swiper-slide>
+					<img src="../../static/orderhistory_03.png" class="noorder" v-if="mydata02.length == 0" />
+					<div class="order-group" @click="opennew('orderdetail', val.usOrderId)" v-for="val in mydata02" v-if="mydata02.length != 0">
+						<img src="../../static/sho.png" />
+						<div class="order-main">
+							<div class="order-text">
+								<span class="order-name">{{ val.usTsCompanyName }}</span>
+								<span class="order-state">已取消</span>
+							</div>
+							<div class="order-time">下单时间:{{ val.usOrCreateTimeString }}</div>
+							<div class="order-money">
+								<span class="oder-price">总价： ¥ {{ val.usOrPrice }}</span>
+								<!--<span class="order-setting">
+											已完成
+									</span>-->
+							</div>
+						</div>
+					</div>
+				</swiper-slide>
+			</swiper>
+			<div id="bottom">
+				<div class="bottom-tab" @click="opennew('index')">
+					<img src="../../static/index.png" />
+					<span>首页</span>
+				</div>
+				<div class="bottom-tab active">
+					<img src="../../static/order-active.png" />
+					<span>订单</span>
+				</div>
+				<div class="bottom-tab" @click="opennew('usercenter')">
+					<img src="../../static/user.png" />
+					<span>我的</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</template>
+
+<script>
+import { swiper, swiperSlide } from 'vue-awesome-swiper';
+export default {
+	name: 'orderlist',
+	data() {
+		return {
+			swiperOption: {},
+			swiperidnex: 0,
+			mydata: '',
+			mydata01: '',
+			mydata02: ''
+		};
+	},
+	mounted() {
+		this.$store.state.head = '我的订单';
+		this.myajax();
+	},
+	methods: {
+		opennew: function(target, id) {
+			this.$store.state.orderid = id;
+			this.$router.push({
+				name: target
+			});
+		},
+		tab: function(index) {
+			this.swiperidnex = index;
+			this.swiper.slideTo(index, 1000, false);
+		},
+		myajax: function() {
+			var that = this;
+			// 查询已完成
+			$.ajax({
+				type: 'post',
+				url: that.myurl + '/selectTraderOrderComplete',
+				data: {
+					usTraderId: localStorage.getItem('usTraderStoresId'),
+					statusTraderStore: 2
+				},
+				dataType: 'json',
+				success: function(res) {
+					that.mydata = res.data;
+				}
+			});
+			// 配送中
+			$.ajax({
+				type: 'post',
+				url: that.myurl + '/selectTraderOrderCancel',
+				data: {
+					usTraderId: localStorage.getItem('usTraderStoresId'),
+					statusTraderStore: 2
+				},
+				dataType: 'json',
+				success: function(res) {
+					that.mydata01 = res.data;
+				}
+			});
+			// 已取消
+			$.ajax({
+				type: 'post',
+				url: that.myurl + '/selectTraderOrderDistribution',
+				data: {
+					usTraderId: localStorage.getItem('usTraderStoresId'),
+					statusTraderStore: 2
+				},
+				dataType: 'json',
+				success: function(res) {
+					that.mydata02 = res.data;
+				}
+			});
+		}
+	},
+	components: {
+		swiper,
+		swiperSlide
+	},
+	computed: {
+		swiper() {
+			return this.$refs.mySwiper.swiper;
+		},
+		myurl() {
+			return this.$store.state.myurl;
+		},
+		orderid() {
+			return this.$store.state.orderid;
+		},
+		statusTraderStore() {
+			return this.$store.state.statusTraderStore;
+		}
+	}
+};
+</script>
+
+<style type="text/css" lang="scss">
+.swiper-slide {
+	overflow-y: scroll;
+}
+.orderlist .nav {
+	width: 100%;
+	height: 0.8rem;
+	border-bottom: 0.01rem solid ghostwhite;
+	display: flex;
+	align-items: center;
+	background: white;
+	margin-bottom: 0.2rem;
+}
+
+.orderlist .nav-tab {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 0.8rem;
+	transition: all 0.3s;
+}
+
+.orderlist .active {
+	border-bottom: 2px solid #FF8190;
+}
+
+.orderlist .noorder {
+	width: 50%;
+	margin: 2rem 25%;
+	height: auto !important;
+}
+
+.orderlist .swiper-container {
+	background: white;
+}
+
+.orderlist .swiper-container {
+	height: calc(100% - 2rem);
+}
+
+.orderlist .order-group {
+	border-bottom: 0.01rem solid ghostwhite;
+}
+
+.orderlist .order-group {
+	display: flex;
+	margin: 0 0.2rem;
+	padding: 0.2rem 0;
+}
+
+.orderlist .order-group img {
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 2px;
+	margin-right: 0.2rem;
+}
+
+.orderlist .order-main {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	height: 1.4rem;
+}
+
+.orderlist .order-text {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.orderlist .order-name {
+	font-size: 0.25rem;
+	font-weight: 600;
+}
+
+.orderlist .order-state {
+	color: #FF8190;
+}
+
+.orderlist .order-time {
+	color: rgb(138, 138, 138);
+}
+
+.orderlist .order-money {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.orderlist .oder-price {
+	color: rgb(138, 138, 138);
+}
+
+.orderlist .order-setting {
+	color: rgb(255, 152, 0);
+	border: 0.01rem solid rgb(255, 152, 0);
+	padding: 0.1rem 0.2rem;
+	border-radius: 0.1rem;
+}
+</style>
