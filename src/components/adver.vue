@@ -270,6 +270,11 @@
 				});
 			},
 			gopay: function() {
+        var that = this
+        if(that.usTraderStoresId==''){
+          plus.nativeUI.closeWaiting()
+          return false;
+        }
 				function plusReady() {
 					// 弹出系统等待对话框
 					plus.nativeUI.showWaiting()
@@ -279,62 +284,82 @@
 				} else {
 					document.addEventListener("plusready", plusReady, false);
 				}
-				var that = this
-				var ajaxjson = {
-					usTraderId: localStorage.getItem('userid'),
-					maAdvertisingId: that.maAdvertisingId,
-					usTraderStoresId: that.usTraderStoresId,
-					usTaStatus: 1
-				}
-				//				判断广告是否已经购买
-				$.ajax({
-					type: "post",
-					url: that.myurl + "/flagBuyAd",
-					dataType: 'json',
-					data: {
-						storesId: that.usTraderStoresId,
-						adId: that.maAdvertisingId
-					},
-					success: function(res) {
-						if(res.status == 200) {
-							$.ajax({
-								type: "post",
-								url: that.myurl + "/insertUsTraderAdvertising",
-								dataType: 'json',
-								data: ajaxjson,
-								success: function(res) {
-									function plusReady() {
-										// 弹出系统等待对话框
-										plus.nativeUI.closeWaiting()
-									}
-									if(window.plus) {
-										plusReady();
-									} else {
-										document.addEventListener("plusready", plusReady, false);
-									}
-									if(res.data == 1) {
-										that.myajax()
-										that.payboo=false
-										plus.nativeUI.toast('购买完成')
-									} else if(res.data == -1) {
-										alert('钱包余额不足，请充值')
-									} else {
-										alert('购买失败')
-									}
-								},
-								error: function(errr) {
-									console.log(JSON.stringify(errr))
-								}
-							});
-						} else {
-							alert(res.msg)
-						}
-					},
-					error: function(errr) {
-						console.log(JSON.stringify(errr))
-					}
-				});
-
+        $.ajax({
+        	type: 'post',
+        	url: that.myurl + '/getUsTraderById',
+        	data: {
+        		usTraderId: localStorage.getItem('userid')
+        	},
+        	success: function(res) {
+        		if (res.status == 200) {
+              if(res.data.usTrCardId!=null){
+                var ajaxjson = {
+                	usTraderId: localStorage.getItem('userid'),
+                	maAdvertisingId: that.maAdvertisingId,
+                	usTraderStoresId: that.usTraderStoresId,
+                	usTaStatus: 1
+                }
+                //				判断广告是否已经购买
+                $.ajax({
+                	type: "post",
+                	url: that.myurl + "/flagBuyAd",
+                	dataType: 'json',
+                	data: {
+                		storesId: that.usTraderStoresId,
+                		adId: that.maAdvertisingId
+                	},
+                	success: function(res) {
+                		if(res.status == 200) {
+                			$.ajax({
+                				type: "post",
+                				url: that.myurl + "/insertUsTraderAdvertising",
+                				dataType: 'json',
+                				data: ajaxjson,
+                				success: function(res) {
+                					function plusReady() {
+                						// 弹出系统等待对话框
+                						plus.nativeUI.closeWaiting()
+                					}
+                					if(window.plus) {
+                						plusReady();
+                					} else {
+                						document.addEventListener("plusready", plusReady, false);
+                					}
+                					if(res.data == 1) {
+                						that.myajax()
+                						that.payboo=false
+                						plus.nativeUI.toast('购买完成')
+                					} else if(res.data == -1) {
+                						alert('钱包余额不足，请充值')
+                					} else {
+                						alert('购买失败')
+                					}
+                				},
+                				error: function(errr) {
+                					console.log(JSON.stringify(errr))
+                				}
+                			});
+                		} else {
+                			alert(res.msg)
+                		}
+                	},
+                	error: function(errr) {
+                		console.log(JSON.stringify(errr))
+                	}
+                });
+              }else{
+                
+                alert('商家未认证，无法购买广告。')
+                plus.nativeUI.closeWaiting()
+              }
+        		} else {
+        			alert(res.msg);
+        		}
+        	},
+        	error: function(res) {
+        		alert('网络连接失败，请检查网络后再试！');
+        	}
+        });
 			},
 			timechange: function() {
 				var that = this

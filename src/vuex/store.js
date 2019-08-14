@@ -14,10 +14,11 @@ const store = new Vuex.Store({
 //		yidianwm.com 192.168.2.107
 //		47.110.8.48  领先
 //		47.104.101.165  联华
-//    39.107.70.18
-		myurl:'http://39.107.70.18/trader',
-		myurl02:'http://39.107.70.18/card',
-		myurl03:'http://39.107.70.18',
+//   39.107.70.18
+//    114.55.39.122   邦
+		myurl:'http://114.55.39.122/trader',
+		myurl02:'http://114.55.39.122/card',
+		myurl03:'http://114.55.39.122',
 		province01:'选择现在住址',
 		city01:'',
 		area01:'',

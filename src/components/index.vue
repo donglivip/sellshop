@@ -611,6 +611,7 @@ export default {
 			function plusReady() {
 				// 弹出系统等待对话框
 				plus.nativeUI.showWaiting('加载中...');
+        plus.navigator.setStatusBarBackground('#FF8190');
 			}
 			if (window.plus) {
 				plusReady();

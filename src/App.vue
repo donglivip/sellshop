@@ -24,7 +24,8 @@
         plus.key.addEventListener("backbutton", function() {
           that.$router.back()
         })
-        plus.navigator.setStatusBarBackground('#FF8190');
+        plus.navigator.setStatusBarBackground('#e9e9e9');
+        plus.navigator.setStatusBarStyle('dark')
         plus.runtime.getProperty(plus.runtime.appid, function(inf) {
           $.ajax({
             type: "post",

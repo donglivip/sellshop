@@ -14,11 +14,11 @@ export default {
   name: 'index',
   data () {
     return {
-      
+
     }
   },
   mounted(){
-  
+
   },
   methods:{
 		opennew:function(target){
@@ -39,5 +39,5 @@ export default {
 </script>
 
 <style type="text/css" lang="scss">
-	
+
 </style>

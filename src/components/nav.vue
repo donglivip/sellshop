@@ -1,6 +1,6 @@
 <template>
 	<div id="wrapper" class="shop">
-		<t-head></t-head>
+		<t-head id='123'></t-head>
 		<div id="main">
 			<div class="group" v-for="(val,index) in mydata" @click="openshoping(val.usTraderStoresId)">
 				<div class="shop-name">
