@@ -104,8 +104,12 @@
 						}
 					});
 				} else {
-
-					that.addcode()
+          if(!(/^1[3456789]\d{9}$/.test(that.phone))){ 
+           alert("手机号格式错误"); 
+           return false;
+          } else{
+            that.addcode()
+          }
 				}
 				this.code = true
 				this.submittext = '登录'

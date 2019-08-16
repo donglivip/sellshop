@@ -40,7 +40,7 @@
 			},
 			submit:function(){
 				var that=this
-				if(that.mymaDiPrice==''||that.mymaDiPrice>5){
+				if(that.mymaDiPrice<=0||that.mymaDiPrice>5){
 					alert('运费区间为0~5元之间')
 					return
 				}

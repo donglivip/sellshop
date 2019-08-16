@@ -35,7 +35,7 @@
                 </div>
                 <span class="order-name">{{ val.usAdsProvince }}{{ val.usAdsDetailed }}</span>
               </div>
-              <a class="order-right" :href="'tel'+val.usAdsPhone">
+              <a class="order-right" :href="'tel:'+val.usAdsPhone">
                   <img src="../../static/dadianhua.png" alt="">
               </a>
             </div>
